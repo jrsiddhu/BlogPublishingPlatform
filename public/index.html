@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inkflow — Modern Blog Publishing Platform</title>
+  <meta name="description" content="A full-featured blog publishing platform built with pure HTML, CSS, JavaScript, Node.js, and MongoDB." />
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Site Navigation Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <!-- Brand Logo -->
+      <div class="brand-logo" id="brandLogo" title="Back to Feed">
+        <div class="brand-icon">✍</div>
+        <span>Inkflow</span>
+      </div>
+
+      <!-- Global Instant Search -->
+      <div class="header-search">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            class="search-input" 
+            id="globalSearchInput" 
+            placeholder="Search stories, topics, authors..." 
+            autocomplete="off"
+          />
+          <button class="search-clear-btn" id="searchClearBtn" title="Clear search">✕</button>
+        </div>
+      </div>
+
+      <!-- Action Navigation -->
+      <nav class="header-nav">
+        <div class="db-status-pill" id="dbStatusPill" title="Connecting...">
+          <span class="status-dot"></span> Checking DB...
+        </div>
+
+        <button class="nav-link active" id="navFeedBtn">
+          <span>📰</span> <span>Feed</span>
+        </button>
+
+        <button class="nav-link btn-write" id="navWriteBtn">
+          <span>✏️</span> <span>Write</span>
+        </button>
+
+        <button class="nav-link" id="navDashboardBtn">
+          <span>📊</span> <span>Dashboard</span>
+        </button>
+
+        <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Light/Dark Theme">
+          <span id="themeIcon">🌙</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="main-content">
+    <div class="container">
+
+      <!-- ================================================================= -->
+      <!-- VIEW 1: EXPLORE & FEED                                            -->
+      <!-- ================================================================= -->
+      <section id="viewFeed" class="view-section active">
+        <!-- Featured Story Hero Banner -->
+        <div id="heroBanner" class="hero-banner" style="display: none;"></div>
+
+        <!-- Category Filter Pills -->
+        <div class="category-filter-bar" id="categoryFilterBar"></div>
+
+        <!-- Feed Toolbar -->
+        <div class="feed-toolbar">
+          <div class="feed-count-text" id="feedCountDisplay">Loading stories...</div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <label for="feedSortSelect" style="font-size: 0.85rem; color: var(--text-muted);">Sort by:</label>
+            <select class="feed-sort-select" id="feedSortSelect">
+              <option value="newest">Latest Stories</option>
+              <option value="popular">Most Read</option>
+              <option value="likes">Most Clapped</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Post Cards Grid -->
+        <div class="posts-grid" id="postsGrid"></div>
+
+        <!-- Empty State (when search/category has no matches) -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+          <div class="empty-icon">📂</div>
+          <h2 class="empty-title">No stories found</h2>
+          <p class="empty-desc">We couldn't find any articles matching your search or category filter. Try clearing filters or write a new one!</p>
+          <button class="btn-primary" onclick="document.getElementById('navWriteBtn').click();">
+            <span>✏️ Write a Story</span>
+          </button>
+        </div>
+      </section>
+
+
+      <!-- ================================================================= -->
+      <!-- VIEW 2: ARTICLE READER                                            -->
+      <!-- ================================================================= -->
+      <section id="viewReader" class="view-section">
+        <div class="reader-container">
+          <!-- Back button -->
+          <button class="reader-back-btn" id="readerBackBtn">
+            <span>←</span> <span>Back to Feed</span>
+          </button>
+
+          <!-- Article Header -->
+          <header class="reader-header">
+            <div class="reader-badge-row">
+              <span class="reader-category" id="readerCategory">Category</span>
+              <span class="reader-readtime" id="readerReadTime">3 min read</span>
+            </div>
+            <h1 class="reader-title" id="readerTitle">Article Title</h1>
+
+            <!-- Author & Metadata Bar -->
+            <div class="reader-author-bar">
+              <div class="reader-author-left">
+                <img src="" alt="Author" class="reader-author-avatar" id="readerAuthorAvatar" />
+                <div>
+                  <div class="reader-author-name" id="readerAuthorName">Author Name</div>
+                  <div class="reader-author-role" id="readerAuthorRole">Author Role</div>
+                </div>
+              </div>
+              <div class="reader-date" id="readerDate">Date</div>
+            </div>
+          </header>
+
+          <!-- Cover Image -->
+          <div class="reader-cover-wrap" id="readerCoverWrap">
+            <img src="" alt="Cover" class="reader-cover-img" id="readerCoverImg" />
+          </div>
+
+          <!-- Main Article Markdown Body -->
+          <article class="reader-content" id="readerContent"></article>
+
+          <!-- Tags list -->
+          <div class="card-tags" id="readerTagsList" style="margin-bottom: 2rem;"></div>
+
+          <!-- Claps / Like Interactive Bar -->
+          <div class="reader-interaction-bar">
+            <div>
+              <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.2rem;">Enjoyed this story?</div>
+              <div style="font-size: 0.85rem; color: var(--text-muted);">Show the author your appreciation with claps!</div>
+            </div>
+            <button class="clap-btn" id="readerLikeBtn">
+              <span>👏</span>
+              <span>Clap (<span id="readerLikeCount">0</span>)</span>
+            </button>
+          </div>
+
+          <!-- Comments Section -->
+          <section class="comments-section" id="commentsSection">
+            <div class="comments-header">
+              <h3 class="comments-title">Discussion <span id="readerCommentCount" style="color: var(--text-muted); font-size: 1rem;">(0)</span></h3>
+            </div>
+
+            <!-- Comment Form -->
+            <form class="comment-form" id="commentForm">
+              <div class="comment-inputs-row">
+                <div>
+                  <label class="form-label" for="commentAuthorInput">Your Name</label>
+                  <input type="text" class="form-input" id="commentAuthorInput" placeholder="e.g. Maya Chen" required />
+                </div>
+                <div>
+                  <label class="form-label">Role / Tagline</label>
+                  <input type="text" class="form-input" placeholder="e.g. Software Engineer / Reader" />
+                </div>
+              </div>
+              <div>
+                <label class="form-label" for="commentTextInput">What are your thoughts?</label>
+                <textarea class="form-textarea" id="commentTextInput" placeholder="Write a thoughtful comment..." required></textarea>
+              </div>
+              <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn-primary">Post Thought</button>
+              </div>
+            </form>
+
+            <!-- Comments List -->
+            <div class="comments-list" id="commentsList"></div>
+          </section>
+        </div>
+      </section>
+
+
+      <!-- ================================================================= -->
+      <!-- VIEW 3: POST EDITOR (WRITE & EDIT)                                -->
+      <!-- ================================================================= -->
+      <section id="viewEditor" class="view-section">
+        <div class="editor-container">
+          <div class="editor-title-row">
+            <h2 id="editorHeading" style="font-size: 1.6rem; font-weight: 800;">Create New Story</h2>
+            <button type="button" class="btn-secondary" id="editorCancelBtn" style="padding: 0.45rem 1rem;">Cancel</button>
+          </div>
+
+          <form id="postForm">
+            <input type="hidden" id="postIdInput" />
+
+            <!-- Story Title -->
+            <div class="form-group">
+              <label class="form-label" for="postTitleInput">Story Title *</label>
+              <input type="text" class="form-input" id="postTitleInput" placeholder="Give your story an inspiring title..." required />
+            </div>
+
+            <!-- Category & Tags -->
+            <div class="grid-2-col">
+              <div class="form-group">
+                <label class="form-label" for="postCategorySelect">Category *</label>
+                <select class="form-select" id="postCategorySelect">
+                  <option value="Technology">Technology</option>
+                  <option value="Coding">Coding</option>
+                  <option value="Design">Design</option>
+                  <option value="AI & Future">AI & Future</option>
+                  <option value="Lifestyle">Lifestyle</option>
+                  <option value="Business">Business</option>
+                  <option value="Architecture">Architecture</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="postTagsInput">Tags (comma separated)</label>
+                <input type="text" class="form-input" id="postTagsInput" placeholder="e.g. NodeJs, MongoDB, CleanCode" />
+              </div>
+            </div>
+
+            <!-- Author Info -->
+            <div class="grid-2-col">
+              <div class="form-group">
+                <label class="form-label" for="postAuthorNameInput">Author Name</label>
+                <input type="text" class="form-input" id="postAuthorNameInput" placeholder="Alex Rivera" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="postAuthorRoleInput">Author Title / Role</label>
+                <input type="text" class="form-input" id="postAuthorRoleInput" placeholder="Lead Software Engineer" />
+              </div>
+            </div>
+
+            <!-- Cover Image URL & Presets -->
+            <div class="form-group">
+              <label class="form-label" for="postCoverImageInput">Cover Image URL</label>
+              <input type="url" class="form-input" id="postCoverImageInput" placeholder="https://images.unsplash.com/..." />
+              <div class="preset-image-row">
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Quick Presets:</span>
+                <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80">💻 Tech Work</button>
+                <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80">⚡ Code</button>
+                <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80">🔮 Abstract AI</button>
+                <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80">🎨 Design</button>
+                <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1200&q=80">🌿 Lifestyle</button>
+              </div>
+              <div class="cover-preview-box" id="coverPreviewBox">
+                <span style="color:var(--text-muted); font-size:0.85rem;">Cover Preview</span>
+              </div>
+            </div>
+
+            <!-- Excerpt / Short Summary -->
+            <div class="form-group">
+              <label class="form-label" for="postExcerptInput">Short Excerpt / Summary *</label>
+              <textarea class="form-textarea" id="postExcerptInput" rows="2" placeholder="A compelling 1-2 sentence hook for the feed card..."></textarea>
+            </div>
+
+            <!-- Content Editor with Markdown Toolbar -->
+            <div class="form-group">
+              <label class="form-label">Article Body (Markdown Supported) *</label>
+              <div class="editor-toolbar">
+                <button type="button" class="toolbar-btn" data-syntax="bold" title="Bold"><strong>B</strong></button>
+                <button type="button" class="toolbar-btn" data-syntax="italic" title="Italic"><em>I</em></button>
+                <button type="button" class="toolbar-btn" data-syntax="h2" title="Heading 2">H2</button>
+                <button type="button" class="toolbar-btn" data-syntax="h3" title="Heading 3">H3</button>
+                <button type="button" class="toolbar-btn" data-syntax="quote" title="Quote">❞ Quote</button>
+                <button type="button" class="toolbar-btn" data-syntax="code" title="Code Block">&lt;/&gt;</button>
+                <button type="button" class="toolbar-btn" data-syntax="list" title="Bullet List">• List</button>
+                <button type="button" class="toolbar-btn" data-syntax="link" title="Insert Link">🔗 Link</button>
+                <button type="button" class="toolbar-btn" data-syntax="image" title="Insert Image">🖼️ Image</button>
+
+                <div class="toolbar-tabs">
+                  <button type="button" class="editor-tab-btn active" id="tabWriteBtn">Write</button>
+                  <button type="button" class="editor-tab-btn" id="tabPreviewBtn">Preview</button>
+                </div>
+              </div>
+
+              <textarea class="form-textarea content-textarea" id="postContentInput" placeholder="Write your full story here using Markdown...&#10;&#10;## Subheading&#10;Share your thoughts with paragraphs, code snippets, quotes, and images." required></textarea>
+              <div class="editor-preview-pane reader-content" id="editorPreviewPane"></div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="editor-actions">
+              <button type="submit" class="btn-primary" id="btnPublishStory">
+                <span>🚀 Publish Story</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+
+      <!-- ================================================================= -->
+      <!-- VIEW 4: CREATOR DASHBOARD                                         -->
+      <!-- ================================================================= -->
+      <section id="viewDashboard" class="view-section">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">Creator Analytics & Management</h1>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">Monitor platform readership, engagement, and manage all published stories.</p>
+          </div>
+          <button class="btn-secondary" id="btnSeedData" title="Reset sample articles">
+            <span>🔄 Reset Sample Posts</span>
+          </button>
+        </div>
+
+        <!-- Metric Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">📝</div>
+            <div>
+              <div class="stat-num" id="statTotalPosts">0</div>
+              <div class="stat-label">Published Stories</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon green">👀</div>
+            <div>
+              <div class="stat-num" id="statTotalViews">0</div>
+              <div class="stat-label">Total Reads</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon pink">👏</div>
+            <div>
+              <div class="stat-num" id="statTotalLikes">0</div>
+              <div class="stat-label">Reader Claps</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon amber">💬</div>
+            <div>
+              <div class="stat-num" id="statTotalComments">0</div>
+              <div class="stat-label">Total Thoughts</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Posts Management Table -->
+        <div class="dashboard-table-card">
+          <div class="table-header-bar">
+            <h3 class="table-title">All Published Stories</h3>
+            <button class="btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="document.getElementById('navWriteBtn').click();">
+              + New Story
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="posts-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Views</th>
+                  <th>Claps</th>
+                  <th>Thoughts</th>
+                  <th>Published</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardPostsTableBody">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    Loading stories...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div style="display: flex; align-items: center; gap: 0.65rem;">
+        <span style="font-weight: 700; color: var(--text-primary);">Inkflow</span>
+        <span>•</span>
+        <span>Minimalist Blog Publishing Platform</span>
+      </div>
+      <div>
+        <span>Built with <strong>HTML5</strong>, <strong>CSS3</strong>, <strong>JavaScript</strong>, <strong>Node.js</strong> &amp; <strong>MongoDB</strong></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal-box">
+      <h3 class="modal-title">Delete this story?</h3>
+      <p class="modal-desc">Are you sure you want to delete this story? This action cannot be undone and will permanently remove the post and all its comments.</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="btnCancelDelete">Cancel</button>
+        <button class="btn-danger" id="btnConfirmDelete">Delete Permanently</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Client Application Scripts -->
+  <script src="js/markdown.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
